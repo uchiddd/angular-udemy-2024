@@ -1,12 +1,5 @@
-import { Component, input } from '@angular/core';
-
-interface Task {
-  id: string;
-  userId: string;
-  title: string;
-  summary: string;
-  dueDate: string;
-}
+import { Component, input, output } from '@angular/core';
+import { Task } from './task.model';
 
 @Component({
   selector: 'app-task',
@@ -17,4 +10,12 @@ interface Task {
 })
 export class TaskComponent {
   task = input<Task>();
+  complete = output<string>();
+
+  onCompleteTask() {
+    const id = this.task()?.id;
+    if (id) {
+      this.complete.emit(id);
+    }
+  }
 }

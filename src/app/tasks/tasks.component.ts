@@ -1,9 +1,9 @@
-import { Component, effect, input, signal } from '@angular/core';
-import { DUMMY_TASKS } from '../dummy-tasks';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { type User } from '../user/user.model';
 import { NewTaskComponent } from './new-task/new-task.component';
 import { TaskComponent } from './task/task.component';
 import { Task, type NewTaskData } from './task/task.model';
+import { TasksService } from './tasks.service';
 
 @Component({
   selector: 'app-tasks',
@@ -13,8 +13,8 @@ import { Task, type NewTaskData } from './task/task.model';
   styleUrl: './tasks.component.css',
 })
 export class TasksComponent {
+  private taskService = inject(TasksService);
   user = input<User>();
-  allTasks = signal<Task[]>([...DUMMY_TASKS]);
   filteredTasks = signal<Task[]>([]);
   isAddingTask = signal<boolean>(false);
 
@@ -26,7 +26,7 @@ export class TasksComponent {
     effect(
       () => {
         this.filteredTasks.set(
-          this.allTasks().filter((task) => task.userId === this.user()?.id)
+          this.taskService.getUserTasks(this.user()?.id ?? '')
         );
       },
       { allowSignalWrites: true }
@@ -34,7 +34,8 @@ export class TasksComponent {
   }
 
   onCompleteTask(id: string) {
-    this.allTasks.update((tasks) => tasks.filter((task) => task.id !== id));
+    this.filteredTasks.update;
+    this.taskService.removeTask(id);
   }
 
   onStartAddTask() {
@@ -46,15 +47,7 @@ export class TasksComponent {
   }
 
   onAddTask(taskData: NewTaskData) {
-    const newTask: Task = {
-      id: new Date().getTime().toString(),
-      userId: this.user()?.id ?? '',
-      title: taskData.title,
-      summary: taskData.summary,
-      dueDate: taskData.date,
-    };
-
-    this.filteredTasks.update((tasks) => [...tasks, newTask]);
+    this.taskService.addTask(taskData, this.user()?.id ?? '');
     this.isAddingTask.set(false);
   }
 }
